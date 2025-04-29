@@ -1,0 +1,96 @@
+﻿@using Bandcamp.Models;
+@using Bandcamp.Services;
+@using Bandcamp.Stores;
+@using Bandcamp.Utils;
+
+@inject GlobalStore globalStore;
+@inject StreamStore streamStore;
+
+<div class="relative w-full h-[160px] space-y-2 px-2 bg-linear-to-r/oklch from-gray-50 to-gray-100 flex-1 justify-content gap-4 border-b border-gray-300 shadow-lg">
+    @foreach (Genre item in @globalStore.GenresList)
+    {
+        if (item.Id != 0)
+        {
+            <button @onclick="()=>AddRemoveGenre(item.Slug)" class="@ValidateGenreInList(item.Slug) mx-1 px-2 max-w cursor-pointer bg-white h-6 hover:outline-1 hover:outline-teal-900 rounded shadow">
+                <p class="capitalize text-sm leading-4">@item.Label</p>
+            </button>
+        }
+    }
+
+    <div class="absolute bottom-1 right-0 left-0 w-full px-2">
+
+        <button @onclick="StartPlayList" class="float-left bg-white px-4 space-x-2 flex justify-content items-center cursor-pointer h-10 text-teal-900 hover:text-teal-600 rounded border border-gray-200">
+            <p class="text-md leading-4">Reproducir lista </p>
+            <div class="mx-auto w-5 h-5">
+                <svg width="18px" height="20px" viewBox="0 0 7 7" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                        <g id="Dribbble-Light-Preview" transform="translate(-347,-3766)" fill="currentColor">
+                            <g id="icons" transform="translate(56,160)">
+                                <path d="M296.494737,3608.57322 L292.500752,3606.14219 C291.83208,3605.73542 291,3606.25002 291,3607.06891 L291,3611.93095 C291,3612.7509 291.83208,3613.26444 292.500752,3612.85767 L296.494737,3610.42771 C297.168421,3610.01774 297.168421,3608.98319 296.494737,3608.57322"></path>
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </button>
+
+        <button @onclick="IndexDiscoverResults" class="@StyleButton() float-right px-4 h-10 rounded border border-gray-200">
+            <p class="text-md leading-4">Crear lista personalizada</p>
+        </button>
+        
+
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter] public Func<Task>? DefaultAction { get; set; }
+    [Parameter] public Action? DefaultActionPlayList { get; set; }
+
+    public bool IsLoading { get; set; } = false;
+
+    public void AddRemoveGenre(string genre)
+    {
+        bool exists = globalStore.ListGenres.Contains(genre);
+
+        if (exists)
+        {
+            globalStore.ListGenres.Remove(genre);
+        } else
+        {
+            if (globalStore.ListGenres.Count() <= 4)
+            {
+                globalStore.ListGenres.Add(genre);
+            }
+        }
+
+        globalStore.GetResponseIndexDiscoverPlayerList().cursor = "*";
+
+    }
+
+    public string ValidateGenreInList(string genre)
+    {
+        bool exists = globalStore.ListGenres.Contains(genre);
+        return exists ? "text-teal-600 outline-teal-600 outline-2" : "text-gray-600 outline-gray-300 outline-1";
+    }
+
+    async public Task IndexDiscoverResults()
+    {
+        if (globalStore.ListGenres.Count() > 0)
+        {
+            await DefaultAction?.Invoke();
+        }
+    }
+
+    public string StyleButton()
+    {
+        return globalStore.ListGenres.Count() > 0 ? "text-teal-900 bg-white cursor-pointer " : "text-gray-400 bg-gray-200 ";
+    }
+
+    public void StartPlayList()
+    {
+        DefaultActionPlayList?.Invoke();
+    }
+}
+

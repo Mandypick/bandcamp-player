@@ -1,0 +1,15 @@
+﻿@using Bandcamp.Components.Player;
+@inherits LayoutComponentBase
+
+<div class="relative bg-linear-to-r/oklch from-gray-50 to-gray-100 flex justify-between h-full w-full overflow-hidden">
+    <div class="w-50 h-[600px]">
+        <NavMenu />
+    </div>
+    <main class="relative w-full h-full overflow-hidden">
+        @Body
+    </main>
+
+    <div class="absolute h-22 w-full bottom-0">
+        <Player></Player>
+    </div>
+</div>

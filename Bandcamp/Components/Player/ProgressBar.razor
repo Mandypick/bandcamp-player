@@ -1,0 +1,29 @@
+﻿@using System.Diagnostics;
+@using Bandcamp.Stores;
+
+@inject StreamStore streamStore;
+
+<div class="relative w-full h-1">
+    <div class="z-2 relative h-1 w-[@streamStore.ProgressStream.ToString()%] bg-teal-700"></div>
+    <div class="z-1 top-0 left-0 absolute h-1 w-[@CalculateStreamDownload().ToString()%] bg-teal-400"></div>
+    <div class="z-0 top-0 left-0 absolute h-1 w-full bg-gray-300"></div>
+</div>
+
+@code {
+    public int CalculateStreamDownload()
+    {
+        int progreso  =(int)Math.Round((streamStore.AudioStreamContainer.Length / (double)streamStore.TotalLengthStream) * 100);
+        return progreso > 0 ? progreso : 0;
+    }
+
+    protected override void OnInitialized()
+    {
+        streamStore.onChangeProgressStream += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        streamStore.onChangeProgressStream -= StateHasChanged;
+    }
+
+}

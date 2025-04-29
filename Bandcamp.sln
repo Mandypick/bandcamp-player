@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35913.81
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bandcamp", "Bandcamp\Bandcamp.csproj", "{ACCF62FB-D130-4AC9-9ABD-9E01B39676C6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ACCF62FB-D130-4AC9-9ABD-9E01B39676C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACCF62FB-D130-4AC9-9ABD-9E01B39676C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACCF62FB-D130-4AC9-9ABD-9E01B39676C6}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{ACCF62FB-D130-4AC9-9ABD-9E01B39676C6}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACCF62FB-D130-4AC9-9ABD-9E01B39676C6}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{ACCF62FB-D130-4AC9-9ABD-9E01B39676C6}.Release|Any CPU.Deploy.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FC593B93-6ECE-4045-98B4-B8E51BA740B6}
+	EndGlobalSection
+EndGlobal

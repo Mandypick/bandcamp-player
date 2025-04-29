@@ -1,0 +1,98 @@
+﻿@using Bandcamp.Models;
+@using Bandcamp.Services;
+@using Bandcamp.Stores;
+@using Bandcamp.Utils;
+
+@inject GlobalStore globalStore;
+@inject StreamStore streamStore;
+
+<div class="h-full w-auto bg-linear-to-r/oklch from-gray-50 to-gray-100">
+    <article class="flex h-full flex-col overflow-y-auto border-r border-gray-300 shadow-lg">
+        <div class="relative px-2 flex h-10 space-x-2">
+            <img class="h-6 w-auto" src="/images/bandcamp-logo.png" alt="">
+            <div class="flex-1">
+                <p class="text-lg text-gray-500 leading-4">Bandcamp</p>
+                <p class="text-xs text-gray-500 font-thin leading-4">Unofficial 1.0.0</p>
+            </div>
+        </div>
+        <nav class="mt-2 px-2">
+            <ul role="list" class="relative flex flex-1 flex-col">
+                <li>
+                    <ul role="list" class="space-y-1">
+
+                        <li>
+                            <NavLink ActiveClass="text-teal-900 bg-slate-50" href="/" Match="NavLinkMatch.All" class="group gap-x-3 p-1 flex rounded-md text-sm hover:bg-gray-50 text-gray-500 hover:text-teal-600 flex justify-content items-center">
+                                <svg fill="currentColor" width="25px" height="25px" viewBox="0 0 24 24" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg" class="icon flat-color">
+                                    <path id="secondary" d="M17,11a1,1,0,0,1,1-1h3a1,1,0,0,1,0,2H18A1,1,0,0,1,17,11Zm4,7H14a1,1,0,0,0,0,2h7a1,1,0,0,0,0-2Zm0-4H14a1,1,0,0,0,0,2h7a1,1,0,0,0,0-2Z" style="fill:currentColor;"></path>
+                                    <path id="primary" d="M13.59,5.19a22.3,22.3,0,0,1-2.82-2.83,1,1,0,0,0-1.11-.3A1,1,0,0,0,9,3V13.76a4.5,4.5,0,1,0,2,3.74V5.56a12.91,12.91,0,0,0,1.41,1.23,1.89,1.89,0,0,1,.69,2.76,1,1,0,0,0,1.8.88A3.86,3.86,0,0,0,13.59,5.19Z" style="fill:currentColor;"></path>
+                                </svg>
+                                <p class="text-gray-500">Novedades</p>
+                            </NavLink>
+                        </li>
+
+                    </ul>
+                </li>
+                <li>
+                    <hr class="border mt-2 mb-2 w-full border-1 border-gray-300"  />
+                </li>
+                <li>
+                    <div class="w-full text-gray-500 h-[250px]">
+                        <p class="text-sm">Biblioteca de música</p>
+                        <p class="text-xs mt-1"><span class="text-sm text-teal-600">@GetTotalItemsPlayList()</span> canciones en cola de reproducción</p>
+                    </div>
+                </li>
+                <li>
+                    <hr class="border w-full border-1 border-gray-300" />
+                </li>
+                <li>
+                </li>
+            </ul>
+        </nav>
+        <footer class="mt-auto mb-0 rounded-md py-3 sticky-0 px-2">
+            <NavLink ActiveClass="text-teal-600" href="/about" Match="NavLinkMatch.All" class="group gap-x-2 flex rounded-md text-sm hover:bg-gray-100 text-gray-500 hover:text-teal-400 flex justify-content items-center">
+                <svg width="25px" height="25px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                        <g id="about-white" fill="currentColor" transform="translate(42.666667, 42.666667)">
+                            <path d="M213.333333,3.55271368e-14 C95.51296,3.55271368e-14 3.55271368e-14,95.51168 3.55271368e-14,213.333333 C3.55271368e-14,331.153707 95.51296,426.666667 213.333333,426.666667 C331.154987,426.666667 426.666667,331.153707 426.666667,213.333333 C426.666667,95.51168 331.154987,3.55271368e-14 213.333333,3.55271368e-14 Z M213.333333,384 C119.227947,384 42.6666667,307.43872 42.6666667,213.333333 C42.6666667,119.227947 119.227947,42.6666667 213.333333,42.6666667 C307.44,42.6666667 384,119.227947 384,213.333333 C384,307.43872 307.44,384 213.333333,384 Z M240.04672,128 C240.04672,143.46752 228.785067,154.666667 213.55008,154.666667 C197.698773,154.666667 186.713387,143.46752 186.713387,127.704107 C186.713387,112.5536 197.99616,101.333333 213.55008,101.333333 C228.785067,101.333333 240.04672,112.5536 240.04672,128 Z M192.04672,192 L234.713387,192 L234.713387,320 L192.04672,320 L192.04672,192 Z"></path>
+                        </g>
+                    </g>
+                </svg>
+                <p class="">Acerca</p>
+            </NavLink>
+        </footer>
+    </article>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // objeto pista seleccionada
+        globalStore.onChangeIndexDiscoverPlayerList += OnChangePlayerList;
+        streamStore.onChangeItemSong += OnChangePlayerList;
+    }
+
+    public void OnChangePlayerList()
+    {
+        StateHasChanged();
+    }
+
+    public int GetTotalItemsPlayList()
+    {
+       return globalStore.GetResponseIndexDiscoverPlayerList().results.Count();
+    }
+
+    public int GetCurrentNumberPlayList()
+    {
+        if (streamStore.RunningPlayList)
+        {
+            return streamStore.IndexItemSongPlayList + 1;
+        }
+        return 0;
+    }
+
+    public void Dispose()
+    {
+        globalStore.onChangeIndexDiscoverPlayerList -= OnChangePlayerList;
+        streamStore.onChangeItemSong += OnChangePlayerList;
+    }
+}

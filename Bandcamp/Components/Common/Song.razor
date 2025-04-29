@@ -1,0 +1,130 @@
+﻿@using System.Diagnostics;
+@using Bandcamp.Models;
+@using Bandcamp.Stores;
+@using System.Linq;
+@using Bandcamp.Utils;
+
+@inject GlobalStore globalStore;
+@inject Utilities applicationUtils;
+
+<div class="reveal bg-white/50 border-White/50 border-gray-50 w-[190px] h-[250px]">
+    <div class="group relative mx-auto w-[190px] h-[190px]">
+        @if (ShowMp3Advisory)
+        {
+            <div class="z-1 p-0.5 absolute left-0 top-0 w-28 h-5 flex space-between space-x-0.5">
+                <div class=""><p class="px-1 text-xs text-black/60 ">Duración</p></div>
+                <p class="text-xs text-[#009689]">@applicationUtils.ConvertSecondsStandar(ValueItemSong.featured_track.duration)</p>
+            </div>
+
+            <div class="z-1 p-0.5 absolute bg-white/50 backdrop-invert backdrop-opacity-70 right-0 top-0 w-14 rounded-l h-5 flex space-between space-x-0.5">
+                <div class="bg-black/60 rounded"><p class="px-1 text-xs primary-color-teal">Mp3</p></div>
+                <p class="text-xs text-[#009689]">128</p>
+            </div>
+        }
+
+        <img loading="lazy" class="@IsHover group shadow shadow-xl w-[190px] h-[190px]" src=@BuildSRCImage() />
+
+        @if (ValueItemSong.result_type == "a")
+        {
+            <div @onclick="PlaySong" @onmouseenter="PlayHover" @onmouseleave="PlayUnHover" class="bg-white/30 backdrop-invert backdrop-opacity-10 z-1 cursor-pointer blur-none h-10 w-10 rounded-full group border @GetColorHires()[1] border-solid border-2 hover:bg-gray-800 absolute bottom-0 left-1 mb-1 content-center justify-content">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="mx-auto realtive icon @GetColorHires()[2] icon-tabler icons-tabler-outline icon-tabler-player-play">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M7 4v16l13 -8z" />
+                </svg>
+            </div>
+        } else
+        {
+            <a class="bg-white/30 backdrop-invert backdrop-opacity-10 z-1 @GetColorHires()[1] cursor-pointer blur-none h-10 w-10 rounded-full group border border-solid border-2 hover:bg-gray-800 absolute bottom-0 left-1 mb-1 flex content-center justify-content items-center" href="@ValueItemSong.item_url">
+                <div class="mx-auto h-7 text-teal-600 w-6">
+                    <svg width="25px" height="24px" viewBox="0 -1 17 17" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7.05025 1.53553C8.03344 0.552348 9.36692 0 10.7574 0C13.6528 0 16 2.34721 16 5.24264C16 6.63308 15.4477 7.96656 14.4645 8.94975L12.4142 11L11 9.58579L13.0503 7.53553C13.6584 6.92742 14 6.10264 14 5.24264C14 3.45178 12.5482 2 10.7574 2C9.89736 2 9.07258 2.34163 8.46447 2.94975L6.41421 5L5 3.58579L7.05025 1.53553Z" fill="currentColor" />
+                        <path d="M7.53553 13.0503L9.58579 11L11 12.4142L8.94975 14.4645C7.96656 15.4477 6.63308 16 5.24264 16C2.34721 16 0 13.6528 0 10.7574C0 9.36693 0.552347 8.03344 1.53553 7.05025L3.58579 5L5 6.41421L2.94975 8.46447C2.34163 9.07258 2 9.89736 2 10.7574C2 12.5482 3.45178 14 5.24264 14C6.10264 14 6.92742 13.6584 7.53553 13.0503Z" fill="currentColor" />
+                        <path d="M5.70711 11.7071L11.7071 5.70711L10.2929 4.29289L4.29289 10.2929L5.70711 11.7071Z" fill="currentColor" />
+                    </svg>
+                </div>
+            </a>
+        }
+
+    </div>
+
+    <div class="truncate relative">
+        <a target="_blank" href="@ValueItemSong.item_url">
+            <p class="truncate text-ellipsis text-md text-gray-600 capitalize hover:text-teal-400">@ValueItemSong.title</p>
+        </a>
+        <a target="_blank" href="@ValueItemSong.band_url">
+            <p class="truncate text-ellipsis text-sm leading-3 capitalize text-gray-400 hover:text-teal-400">@ValueItemSong.band_name</p>
+        </a>
+        <p class="truncate text-ellipsis text-xs capitalize font-face text-gray-500">@FindGenreById().Label</p>
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter] public ItemSong? ValueItemSong { get; set; } = new ItemSong();
+    [Parameter] public int? IndexItem { get; set; } = 0;
+    [Parameter] public Func<ItemSong,Task> DefaultAction { get; set; }
+
+    private string IsHover { get; set; } = "";
+    private bool ShowMp3Advisory { get; set; } = false;
+
+    private void PlayHover()
+    {
+        IsHover = "blur-xs bg-gray-500 opacity-70 ";
+        ShowMp3Advisory = true;
+    }
+
+    private void PlayUnHover()
+    {
+        IsHover = "";
+        ShowMp3Advisory = false;
+    }
+
+    public List<string> GetColorHires()
+    {
+        int maximum_bit_depth = 10;
+        if (maximum_bit_depth >= 24)
+        {
+            return ["from-amber-300 to-amber-900", "border-amber-500", "text-amber-500"];
+        }
+        else if (maximum_bit_depth >= 16)
+        {
+            return ["from-teal-300 to-teal-800", "border-teal-500", "text-teal-500"];
+        }
+        else
+        {
+            return ["from-teal-300 to-teal-900", "border-teal-600", "text-teal-600"];
+        }
+    }
+
+    public string BuildSRCImage()
+    {
+
+        Dictionary<string, string> directionsType = new Dictionary<string, string>
+        {
+            { "a","a" },
+            { "s","0" },
+        };
+
+        if (ValueItemSong.result_type == "a" || ValueItemSong.result_type == "s")
+        {
+            return "https://f4.bcbits.com/img/" + directionsType[ValueItemSong.result_type] + ValueItemSong.item_image_id.ToString() + "_2.jpg";
+        }
+
+        return "svgs/music-note-3-svgrepo-com.svg";
+
+    }
+
+    public Genre FindGenreById()
+    {
+        Genre? genre = globalStore.GenresList.FirstOrDefault((g) => g.Id == ValueItemSong.band_genre_id);
+        return genre ?? globalStore.GenresList.FirstOrDefault((g) => g.Id == 0);
+    }
+
+    async public void PlaySong()
+    {
+        await DefaultAction?.Invoke(ValueItemSong);
+    }
+}
+

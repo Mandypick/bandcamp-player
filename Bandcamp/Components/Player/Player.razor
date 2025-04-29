@@ -1,0 +1,503 @@
+﻿@using System.Diagnostics;
+@using Bandcamp.Stores;
+@using Bandcamp.Models;
+@using Bandcamp.Services;
+@using Bandcamp.Utils;
+@using Bandcamp.ProcessCache;
+@using System.IO;
+@using System.Runtime.InteropServices;
+@using System;
+
+@inject StreamStore streamStore;
+@inject GlobalStore globalStore;
+@inject ApplicationService applicationService;
+@inject Utilities applicationUtils;
+@inject ApplicationProcess applicationProcess;
+
+<div class="z-1 bg-linear-to-r/oklch from-white via-gray-200 to-white border-t border-gray-300 relative w-full h-22 flex content-between">
+	<div class="absolute w-full h-1 ml-1 mt-1 mr-1">
+		<ProgressBar></ProgressBar>
+	</div>
+
+	<!-- ################# Cover #######################-->
+	<div class="float-left mt-3 h-18 truncate w-100 flex items-center">
+		@if(streamStore.GetItemSong().item_image_id == 0){
+			<div class="ml-1 border w-18 h-18 border-gray-300 text-gray-400 flex items-center">
+				<div class="mx-auto h-14 w-14">
+					<svg width="80px" height="80px" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<g stroke-width="0" />
+						<g stroke-linecap="round" stroke-linejoin="round" />
+						<g>
+							<path d="M12 18C12 20.2091 10.2091 22 8 22C5.79086 22 4 20.2091 4 18C4 15.7909 5.79086 14 8 14C10.2091 14 12 15.7909 12 18Z" stroke="currentColor" stroke-width="1.5" /> <path d="M12 18V6" stroke="currentColor" stroke-width="1.5" />
+							<path d="M16.1167 10.0587L13.4833 8.74199C13.1184 8.55954 12.9359 8.46831 12.7852 8.35309C12.3949 8.05463 12.128 7.62291 12.0357 7.14028C12 6.95397 12 6.74998 12 6.34199C12 5.3709 12 4.88536 12.1196 4.55528C12.4356 3.68288 13.3101 3.14239 14.2317 3.24989C14.5804 3.29057 15.0147 3.50771 15.8833 3.94199L18.5167 5.25871C18.8816 5.44117 19.0641 5.5324 19.2148 5.64761C19.6051 5.94608 19.872 6.3778 19.9643 6.86043C20 7.04673 20 7.25073 20 7.65871C20 8.6298 20 9.11535 19.8804 9.44543C19.5644 10.3178 18.6899 10.8583 17.7683 10.7508C17.4196 10.7101 16.9853 10.493 16.1167 10.0587Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+						</g>
+					</svg>
+				</div>
+			</div>
+		}else{
+			<img class="ml-1 mt-1 flex-none w-20 h-20" src="@BuildSRCImage()" />
+		}
+
+		@if (@streamStore.GetItemSong().id > 0)
+		{
+			<div class="leading-4 ml-2 select-none truncate">
+				<a target="_blank" href="@streamStore.GetItemSong().item_url">
+					<p class="truncate text-ellipsis text-gray-600 hover:text-teal-400 text-md capitalize"> @streamStore.GetItemSong().featured_track.title</p>
+				</a>
+				<a target="_blank" href="@streamStore.GetItemSong().band_url">
+					<p class="truncate text-ellipsis text-gray-400 hover:text-teal-400 text-sm capitalize">@streamStore.GetItemSong().featured_track.band_name</p>
+				</a>
+				<p class="truncate text-ellipsis text-gray-400 text-xs">@applicationUtils.ConvertSecondsStandar(streamStore.GetItemSong().featured_track.duration)</p>
+				<p class="truncate text-ellipsis leading-3 text-gray-400 text-xs">Mp3~128</p>
+			</div>
+		}
+
+	</div>
+
+	<!-- ################# Bloque de controles #######################-->
+	<div class="mt-2 h-22 w-auto text-red-500">
+		<div class="mx-auto mt-2 h-16 w-max flex justify-content items-center space-x-6">
+
+			<!-- stop -->
+			<div @onclick="StopStream" class="w-6 h-6 cursor-pointer text-teal-900 hover:text-teal-600">
+				<svg fill="currentColor" width="35px" height="35px" viewBox="6 6 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg">
+					<path d="M5.92 24.096q0 0.832 0.576 1.408t1.44 0.608h16.128q0.832 0 1.44-0.608t0.576-1.408v-16.16q0-0.832-0.576-1.44t-1.44-0.576h-16.128q-0.832 0-1.44 0.576t-0.576 1.44v16.16z"></path>
+				</svg>
+			</div>
+
+			<!-- shuffle -->
+			<div @onclick="SetShuffleStream" class="@ValidateBooleanHover(ShuffleStream) w-8 h-8 relative cursor-pointer">
+				<svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M18 4L21 7M21 7L18 10M21 7H17C16.0707 7 15.606 7 15.2196 7.07686C13.6329 7.39249 12.3925 8.63288 12.0769 10.2196C12 10.606 12 11.0707 12 12C12 12.9293 12 13.394 11.9231 13.7804C11.6075 15.3671 10.3671 16.6075 8.78036 16.9231C8.39397 17 7.92931 17 7 17H3M18 20L21 17M21 17L18 14M21 17H17C16.0707 17 15.606 17 15.2196 16.9231C15.1457 16.9084 15.0724 16.8917 15 16.873M3 7H7C7.92931 7 8.39397 7 8.78036 7.07686C8.85435 7.09158 8.92758 7.1083 9 7.12698" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+			</div>
+			<!-- back -->
+			<div @onclick="SetPrevItem" class="w-12 h-10 cursor-pointer hover:text-teal-600 text-teal-900 transform rotate-180">
+				<svg width="40px" height="40px" viewBox="0 0 24.00 24.00" fill="currentColor" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="0.456">
+					<g stroke-width="0" fill="currentColor" />
+					<g stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="0.048" fill="currentColor" />
+					<g fill="currentColor">
+						<path fill-rule="evenodd" clip-rule="evenodd" d="M5.60439 4.23093C4.94586 3.73136 4 4.20105 4 5.02762V18.9724C4 19.799 4.94586 20.2686 5.60439 19.7691L14.7952 12.7967C15.3227 12.3965 15.3227 11.6035 14.7952 11.2033L5.60439 4.23093ZM2 5.02762C2 2.54789 4.83758 1.13883 6.81316 2.63755L16.004 9.60993C17.5865 10.8104 17.5865 13.1896 16.004 14.3901L6.81316 21.3625C4.83758 22.8612 2 21.4521 2 18.9724V5.02762Z" fill="currentColor" />
+						<path d="M20 3C20 2.44772 20.4477 2 21 2C21.5523 2 22 2.44772 22 3V21C22 21.5523 21.5523 22 21 22C20.4477 22 20 21.5523 20 21V3Z" fill="currentColor" />
+					</g>
+				</svg>
+			</div>
+			<!-- pause/play -->
+			@if (RunningStream){
+				<div @onclick="PauseStream" class="w-13 h-13 flex justify-content items-center">
+					<div class="mx-auto w-12 h-12 border border-4 border-teal-900 hover:border-teal-600 flex justify-content items-center cursor-pointer text-teal-900 hover:text-teal-600">
+
+						<svg width="40px" height="32px" viewBox="-1 0 8 8" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+							<g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+								<g transform="translate(-227.000000, -3765.000000)" fill="currentColor">
+									<g transform="translate(56.000000, 160.000000)">
+										<path d="M172,3605 C171.448,3605 171,3605.448 171,3606 L171,3612 C171,3612.552 171.448,3613 172,3613 C172.552,3613 173,3612.552 173,3612 L173,3606 C173,3605.448 172.552,3605 172,3605 M177,3606 L177,3612 C177,3612.552 176.552,3613 176,3613 C175.448,3613 175,3612.552 175,3612 L175,3606 C175,3605.448 175.448,3605 176,3605 C176.552,3605 177,3605.448 177,3606"></path>
+									</g>
+								</g>
+							</g>
+						</svg>
+
+					</div>
+
+				</div>
+			} else {
+				<div @onclick="PlayStream" class="w-13 h-13 border border-3 border-teal-900 hover:border-teal-600 flex justify-content items-center rounded-full cursor-pointer text-teal-900 hover:text-teal-600">
+					<div class="mx-auto pl-1 w-7 h-8">
+						<svg width="28px" height="30px" viewBox="0 0 7 7" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+							<g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+								<g transform="translate(-347,-3766)" fill="currentColor">
+									<g transform="translate(56,160)">
+										<path d="M296.494737,3608.57322 L292.500752,3606.14219 C291.83208,3605.73542 291,3606.25002 291,3607.06891 L291,3611.93095 C291,3612.7509 291.83208,3613.26444 292.500752,3612.85767 L296.494737,3610.42771 C297.168421,3610.01774 297.168421,3608.98319 296.494737,3608.57322"></path>
+									</g>
+								</g>
+							</g>
+						</svg>
+					</div>
+				</div>
+			}
+			<!-- next -->
+			<div @onclick="SetNextItem" class="w-12 h-10 cursor-pointer text-teal-900 hover:text-teal-600">
+				<svg width="40px" height="40px" viewBox="0 0 24.00 24.00" fill="currentColor" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="0.456">
+					<g stroke-width="0" fill="currentColor" />
+					<g stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" stroke-width="0.048" fill="currentColor" />
+					<g fill="currentColor"> 
+						<path fill-rule="evenodd" clip-rule="evenodd" d="M5.60439 4.23093C4.94586 3.73136 4 4.20105 4 5.02762V18.9724C4 19.799 4.94586 20.2686 5.60439 19.7691L14.7952 12.7967C15.3227 12.3965 15.3227 11.6035 14.7952 11.2033L5.60439 4.23093ZM2 5.02762C2 2.54789 4.83758 1.13883 6.81316 2.63755L16.004 9.60993C17.5865 10.8104 17.5865 13.1896 16.004 14.3901L6.81316 21.3625C4.83758 22.8612 2 21.4521 2 18.9724V5.02762Z" fill="currentColor" />
+						<path d="M20 3C20 2.44772 20.4477 2 21 2C21.5523 2 22 2.44772 22 3V21C22 21.5523 21.5523 22 21 22C20.4477 22 20 21.5523 20 21V3Z" fill="currentColor" />
+					</g>
+				</svg>
+			</div>
+			<!-- repeat -->
+			<div @onclick="SetRepeatStream" class="@ValidateBooleanHover(RepeatStream) w-8 h-8 relative cursor-pointer">
+				<svg width="30px" height="30px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+					<g stroke-width="0" />
+					<g stroke-linecap="round" stroke-linejoin="round" />
+					<g> <g> <path fill="none" d="M0 0h24v24H0z" /> <path d="M8 20v1.932a.5.5 0 0 1-.82.385l-4.12-3.433A.5.5 0 0 1 3.382 18H18a2 2 0 0 0 2-2V8h2v8a4 4 0 0 1-4 4H8zm8-16V2.068a.5.5 0 0 1 .82-.385l4.12 3.433a.5.5 0 0 1-.321.884H6a2 2 0 0 0-2 2v8H2V8a4 4 0 0 1 4-4h10zm-5 4h2v8h-2v-6H9V9l2-1z" /> </g> </g>
+				</svg>
+			</div>
+			<!-- repeat all-->
+			<div @onclick="SetRepeatAllListStream" class="@ValidateBooleanHover(RepeatAllListStream) w-8 h-8 cursor-pointer">
+				<svg width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M5.00001 4C3.34315 4 2.00001 5.34314 2.00001 7L2 17C2 18.6569 3.34315 20 5 20H8C8.55228 20 9 19.5523 9 19C9 18.4477 8.55228 18 8 18H5C4.44771 18 4 17.5523 4 17V7C4 6.44772 4.44771 6 5 6L19 6C19.5523 6 20 6.44772 20 7L20 17C20 17.5523 19.5523 18 19 18H14.0027L15.2821 16.7161C15.6734 16.3235 15.6734 15.687 15.2821 15.2944C14.8909 14.9019 14.2566 14.9019 13.8654 15.2944L11.5937 17.574L11.5805 17.5873C10.804 18.3724 10.8057 19.6406 11.5859 20.4234L13.8604 22.7058C14.2513 23.0981 14.8852 23.0981 15.2762 22.7058C15.6672 22.3134 15.6672 21.6773 15.2762 21.285L13.9956 20H19C20.6569 20 22 18.6569 22 17L22 7C22 5.34315 20.6569 4 19 4L5.00001 4Z" fill="currentColor" />
+				</svg>
+			</div>
+
+		</div>
+	</div>
+
+	<!-- ################# Album #######################-->
+	<div class="float-right select-none mt-3 truncate h-18 w-100 flex justify-end items-center">
+		<div class="leading-4 mr-2 truncate text-end">
+
+			<p class="truncate text-ellipsis text-gray-600 capitalize text-md">@streamStore.GetItemSong().title</p>
+
+			<p class="truncate text-ellipsis text-gray-400 capitalize text-sm">@streamStore.GetItemSong().band_location </p>
+			@if (streamStore.GetItemSong().item_url.Length > 0){
+				<div class="z-10 w-full flex items-center content-between justify-end space-x-2">
+					<p class="text-sm text-gray-400">Obtener Album en</p>
+					<a target="_blank" class="w-28" href="@streamStore.GetItemSong().item_url">
+						<div class="p-0.5 cursor-pointer shadow shadow-lg bg-linear-to-r/oklch from-[#dea300c2] to-[#ffc234] left-0 bottom-0 w-28 rounded h-6 flex space-between space-x-1">
+							<div class="bg-black rounded ">
+								<p class="px-1 mt-1 font-semibold primary-color-hires-16">Audio</p>
+							</div>
+							<p class="font-semibold mt-1 text-black">Hi-Res</p>
+						</div>
+					</a>
+				</div>
+			}
+		</div>
+
+	</div>
+
+</div>
+
+@code {
+
+	public long bytesSentToFFplay = 0;
+	public int progressBarCounter = 0;
+	public bool RunningStream { get; set; } = false;
+	public bool RepeatStream { get; set; } = false;
+	public bool ShuffleStream { get; set; } = false;
+	public bool RepeatAllListStream { get; set; } = false;
+	public long InitialBytesStartRequest = 1500000; // 1.5 mb
+	public long PrevInitialBytesStartRequest = 700000; // 700KB
+	private bool IsButtonsEnabled = true;
+
+	// observar cambios en streamstore al iniciar componente
+	protected override void OnInitialized()
+	{
+		// objeto pista seleccionada
+		streamStore.onChangeItemSong += OnChangeItemSong;
+		// almacen de bytes stream a reproducir
+		streamStore.onChangeAudioStream += OnChangeAudioStream;
+		// total de bytes stream del objeto pista a reproducir
+		streamStore.onChangeLengthStream += OnSetStreamLength;
+	}
+
+	public string BuildSRCImage()
+	{
+		return "https://f4.bcbits.com/img/a" + streamStore.GetItemSong().item_image_id.ToString() + "_2.jpg";
+	}
+
+	public string ValidateBooleanHover(bool condition)
+	{
+		return condition ? "text-teal-900" : "text-gray-400 hover:text-teal-600";
+	}
+
+	public void SetShuffleStream()
+	{
+		ShuffleStream = !ShuffleStream;
+		StateHasChanged();
+	}
+
+	async public Task PlayStream(){
+		Debug.WriteLine("info play song:" + streamStore.GetItemSong().id);
+		Debug.WriteLine("total bytes stream:" + streamStore.TotalLengthStream);
+		Debug.WriteLine("info current audio stream length:" + streamStore.AudioStreamContainer.Length);
+
+		if (!IsButtonsEnabled) return;
+		IsButtonsEnabled = false;
+
+		try
+		{
+			if (streamStore.GetItemSong().id > 0 && streamStore.TotalLengthStream > 0 && streamStore.AudioStreamContainer.Length > 0)
+			{
+				RunningStream = true;
+				applicationProcess.DefineProcessFfplay();
+				StartPlayAudioStream();
+				StateHasChanged();
+			}
+		}
+		finally
+		{
+			await Task.Delay(2000);
+			IsButtonsEnabled = true;
+		}
+	}
+
+	async public Task PauseStream(){
+
+		if (!IsButtonsEnabled) return;
+		IsButtonsEnabled = false;
+
+		try
+		{
+			RunningStream = false;
+			applicationProcess.DestroyedProcess();
+			StateHasChanged();
+		}
+		finally
+		{
+			await Task.Delay(2000);
+			IsButtonsEnabled = true;
+		}
+
+	}
+
+	public void SetRepeatStream()
+	{
+		RepeatStream = !RepeatStream;
+		StateHasChanged();
+	}
+
+	public void SetRepeatAllListStream()
+	{
+		RepeatAllListStream = !RepeatAllListStream;
+		StateHasChanged();
+	}
+
+	async public Task StartPlayAudioStream()
+	{
+
+		Debug.WriteLine("Cambio en AudioStreamContainer");
+		Debug.WriteLine("Iniciando nueva instancia de reproductor con: " + streamStore.AudioStreamContainer.Length + " bytes");
+
+		if (applicationProcess._process != null)
+		{
+			await ExternBufferReadProcess();
+			Debug.WriteLine("Instancia global ExternBufferReadProcess finalizada");
+			OnFinalizePlaySong();
+		}
+
+		Debug.WriteLine("Instancia terminada");
+	}
+
+	async public Task ExternBufferReadProcess()
+	{
+		Debug.WriteLine("iniciando external read process");
+		int CacheBytesSentToFFplay = 0;
+
+		MemoryStream AudioStreamContainer = new MemoryStream();
+		// Setear la posicion rango de copiado desde último byte reproducido en audiostream y copiar a audiostreamcontainer / local cache stream 
+		streamStore.AudioStreamContainer.Seek(bytesSentToFFplay, SeekOrigin.Begin);
+		streamStore.AudioStreamContainer.CopyTo(AudioStreamContainer);
+
+		// se añade delay de 3 segundos en el proceso al final de leer lote AudioStream para reproducir el anterior cache
+		if (bytesSentToFFplay >= streamStore.AudioStreamContainer.Length)
+		{
+			await Task.Delay(3000);
+			return;
+		}
+
+		OnFinalizeReadBufferProcess();
+
+		byte[] bufferStream = new byte[8192];
+		int bytesRead;
+
+		AudioStreamContainer.Seek(CacheBytesSentToFFplay, SeekOrigin.Begin);
+
+		while((bytesRead = AudioStreamContainer.Read(bufferStream, 0, bufferStream.Length)) > 0)
+		{
+			// bytesRead se asignara de acuerdo a los bytes leidos en cada iteracción
+			// no necesariamente completando el requerimiento del buffer
+			CacheBytesSentToFFplay += bytesRead;
+			bytesSentToFFplay += bytesRead;
+			int _progressBarCounter = (int)Math.Round((bytesSentToFFplay / (double)streamStore.TotalLengthStream) * 100);
+			streamStore.SetProgressStream(_progressBarCounter);
+
+			if (applicationProcess._process.HasExited || applicationProcess._process == null) return;
+
+			Stream streamWriter = applicationProcess._process.StandardInput.BaseStream;
+			await streamWriter.WriteAsync(bufferStream, 0, bytesRead);
+			await streamWriter.FlushAsync();
+		}
+
+		if (bytesSentToFFplay <= streamStore.AudioStreamContainer.Length)
+		{
+			Debug.WriteLine("solictando nueva pila de función ExternBufferReadProcess");
+			await ExternBufferReadProcess();
+		}
+
+		return;
+	}
+
+	async public Task OnFinalizeReadBufferProcess()
+	{
+
+		if (streamStore.TotalLengthStream > streamStore.AudioStreamContainer.Length)
+		{
+			Debug.WriteLine("Solicitando el próximo lote.");
+
+			// si descargando el proximo lote seria menor o igual al total de bytes del archivo, se descarga
+			if (streamStore.AudioStreamContainer.Length + (InitialBytesStartRequest - 1) <= streamStore.TotalLengthStream)
+			{
+				Debug.WriteLine("######### Descargando próximo lote.");
+				GetStreamChunck(streamStore.AudioStreamContainer.Length, InitialBytesStartRequest - 1);
+			}
+
+			// se descarga último lote
+			if (streamStore.AudioStreamContainer.Length + (InitialBytesStartRequest - 1) > streamStore.TotalLengthStream)
+			{
+				Debug.WriteLine("######### Descargando último lote.");
+				GetStreamChunck(streamStore.AudioStreamContainer.Length, streamStore.TotalLengthStream);
+			}
+		}
+
+	}
+
+	async public void OnSetStreamLength()
+	{
+		// despues de intentar obtener el total de headers del actual ItemSong
+		// si hay una lista en ejecución se setea el siguiente ItemSong
+		if (streamStore.TotalLengthStream == 0 && streamStore.RunningPlayList)
+		{
+			applicationUtils.SetNextItemPlayList();
+			return;
+		}
+
+		// obtenemos el primer lote de bytes a reproducir
+		// la reproducción se incia automaticamente despues de setear los primeros bytes en AudioStreamContainer
+		// si se seteo el total de bytes de la actual canción y el reproductor esta detenido
+		if (streamStore.TotalLengthStream == 0)
+		{
+			return;			
+		}
+
+		if (streamStore.TotalLengthStream > PrevInitialBytesStartRequest)
+		{
+			// se descarga un lote con longitud preestablecida
+			await applicationService.DownloadNextChunk(streamStore.GetItemSong().featured_track.stream_url, 0, PrevInitialBytesStartRequest-1);
+		} else
+		{
+			// se descarga el último lote 
+			await applicationService.DownloadNextChunk(streamStore.GetItemSong().featured_track.stream_url, 0, streamStore.TotalLengthStream);
+		}
+	}
+
+	public void OnChangeAudioStream()
+	{
+		Debug.WriteLine("ahora AudioStreamContainer pesa:" + streamStore.AudioStreamContainer.Length);
+
+		// si ya esta inciado el reproductor retorna
+		if (RunningStream) return;
+		applicationProcess.DefineProcessFfplay();
+		StartPlayAudioStream();
+
+		if (!RunningStream)
+		{
+			RunningStream = true;
+			StateHasChanged();
+		}
+
+	}
+	
+
+	public void GetStreamChunck(long startbyte, long endbyte)
+	{
+		applicationService.DownloadNextChunk(streamStore.GetItemSong().featured_track.stream_url,startbyte,endbyte);
+	}
+
+	public void StopStream()
+	{
+		applicationProcess.DestroyedProcess();
+		bytesSentToFFplay = 0;
+		progressBarCounter = 0;
+		RunningStream = false;
+		streamStore.ClearStreamVariables();
+		StateHasChanged();
+	}
+
+	async public void OnChangeItemSong()
+	{
+
+		applicationProcess.DestroyedProcess();
+		if (RunningStream) RunningStream = false;
+		if (bytesSentToFFplay > 0) bytesSentToFFplay = 0;
+		if (streamStore.ProgressStream > 0) streamStore.ProgressStream = 0;
+
+		// obtenemos el total de bytes a reproducir
+		await applicationService.GetTotalFileSizeStream(streamStore.GetItemSong().featured_track.stream_url);
+		
+	}
+
+	public void OnFinalizePlaySong()
+	{
+		RunningStream = false;
+		bytesSentToFFplay = 0;
+		streamStore.ProgressStream = 0;
+		applicationProcess.DestroyedProcess();
+
+		// si se debe repetir la actual pista
+		// OK
+		if (RepeatStream)
+		{
+			Debug.WriteLine("iniciando repetir reproducción");
+			PlayStream();
+			return;
+		}
+
+		// si hay una playlist en reproducción
+		if(streamStore.RunningPlayList)
+		{
+			Debug.WriteLine("iniciando siguiente item en lista de reproducción");
+			applicationUtils.SetNextItemPlayList(RepeatAllListStream,ShuffleStream);
+			return;
+		}
+
+		Debug.WriteLine("Proceso terminado al reproducir una canción!");
+		StateHasChanged();
+
+	}
+
+	async public Task SetPrevItem()
+	{
+		if (!IsButtonsEnabled) return;
+		IsButtonsEnabled = false;
+
+		try
+		{
+			StopStream();
+			applicationUtils.SetPrevItemPlayList();
+		}
+		finally
+		{
+			await Task.Delay(2500);
+			IsButtonsEnabled = true;
+		}
+	}
+
+	async public Task SetNextItem()
+	{
+		if (!IsButtonsEnabled) return;
+		IsButtonsEnabled = false;
+
+		try
+		{
+			StopStream();
+			applicationUtils.SetNextItemPlayList(RepeatAllListStream,ShuffleStream);
+		}
+		finally
+		{
+			await Task.Delay(2500);
+			IsButtonsEnabled = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		streamStore.onChangeItemSong -= OnChangeItemSong;
+		streamStore.onChangeAudioStream -= OnChangeAudioStream;
+		streamStore.onChangeLengthStream -= OnSetStreamLength;
+		applicationProcess.DestroyedProcess();
+	}
+
+}	
