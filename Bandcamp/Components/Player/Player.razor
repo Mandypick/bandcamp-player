@@ -211,9 +211,7 @@
 
 	async public Task PlayStream(){
 		Debug.WriteLine("info play song:" + streamStore.GetItemSong().id);
-		Debug.WriteLine("total bytes stream:" + streamStore.TotalLengthStream);
-		Debug.WriteLine("info current audio stream length:" + streamStore.AudioStreamContainer.Length);
-
+		
 		if (!IsButtonsEnabled) return;
 		IsButtonsEnabled = false;
 
@@ -229,7 +227,7 @@
 		}
 		finally
 		{
-			await Task.Delay(2000);
+			await Task.Delay(1500);
 			IsButtonsEnabled = true;
 		}
 	}
@@ -247,7 +245,7 @@
 		}
 		finally
 		{
-			await Task.Delay(2000);
+			await Task.Delay(1500);
 			IsButtonsEnabled = true;
 		}
 

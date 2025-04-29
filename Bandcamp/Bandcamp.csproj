@@ -77,6 +77,16 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="tools\ffplay.exe" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="tools\ffplay.exe">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
@@ -85,7 +95,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="tools\" />
       <Folder Include="wwwroot\svgs\" />
     </ItemGroup>
 
