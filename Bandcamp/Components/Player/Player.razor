@@ -21,7 +21,7 @@
 
 	<!-- ################# Cover #######################-->
 	<div class="float-left mt-3 h-18 truncate w-100 flex items-center">
-		@if(streamStore.GetItemSong().item_image_id == 0){
+		@if(streamStore.GetItemSong().item_id == 0){
 			<div class="ml-1 border w-18 h-18 border-gray-300 text-gray-400 flex items-center">
 				<div class="mx-auto h-14 w-14">
 					<svg width="80px" height="80px" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +38,7 @@
 			<img class="ml-1 mt-1 flex-none w-20 h-20" src="@BuildSRCImage()" />
 		}
 
-		@if (@streamStore.GetItemSong().id > 0)
+		@if (@streamStore.GetItemSong().item_id > 0)
 		{
 			<div class="leading-4 ml-2 select-none truncate">
 				<a target="_blank" href="@streamStore.GetItemSong().item_url">
@@ -195,7 +195,7 @@
 
 	public string BuildSRCImage()
 	{
-		return "https://f4.bcbits.com/img/a" + streamStore.GetItemSong().item_image_id.ToString() + "_2.jpg";
+		return "https://f4.bcbits.com/img/a" + streamStore.GetItemSong().primary_image.image_id.ToString() + "_2.jpg";
 	}
 
 	public string ValidateBooleanHover(bool condition)
@@ -210,14 +210,14 @@
 	}
 
 	async public Task PlayStream(){
-		Debug.WriteLine("info play song:" + streamStore.GetItemSong().id);
+		Debug.WriteLine("info play song:" + streamStore.GetItemSong().item_id);
 		
 		if (!IsButtonsEnabled) return;
 		IsButtonsEnabled = false;
 
 		try
 		{
-			if (streamStore.GetItemSong().id > 0 && streamStore.TotalLengthStream > 0 && streamStore.AudioStreamContainer.Length > 0)
+			if (streamStore.GetItemSong().item_id > 0 && streamStore.TotalLengthStream > 0 && streamStore.AudioStreamContainer.Length > 0)
 			{
 				RunningStream = true;
 				applicationProcess.DefineProcessFfplay();

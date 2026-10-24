@@ -98,7 +98,7 @@ namespace Bandcamp.Utils
             // si el total de pistas es mayor o igual que contador de indices mas 1
             ItemSong itemSong = shuffleStream ? GetRandomItemSong() : GetNextItemSong();
             
-            if (itemSong.id == 0)
+            if (itemSong.item_id == 0)
             {
                 _StreamStore.IndexItemSongPlayList = 0;
 
@@ -121,7 +121,7 @@ namespace Bandcamp.Utils
             // si el total de pistas es mayor o igual que contador de indices mas 1
             ItemSong itemSong = GetPrevItemSong();
         
-            if (itemSong.id == 0)
+            if (itemSong.item_id == 0)
             {
                 _StreamStore.IndexItemSongPlayList = 0;
                 _StreamStore.SetItemSongPlayList(_GlobalStore.GetResponseIndexDiscoverPlayerList().results[0]);
@@ -150,7 +150,7 @@ namespace Bandcamp.Utils
 
         public void SetItemSongCustom(ItemSong itemsong)
         {
-            int index = _GlobalStore.GetResponseIndexDiscoverPlayerList().results.FindIndex(item => item.id == itemsong.id);
+            int index = _GlobalStore.GetResponseIndexDiscoverPlayerList().results.FindIndex(item => item.item_id == itemsong.item_id);
             StartPlayList(index);            
         }
 
